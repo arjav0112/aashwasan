@@ -31,7 +31,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Connect to MongoDB
-const url = "mongodb+srv://sachin:Sachin%40123@cluster0.xpiidgl.mongodb.net/Kushal";
+const url = "mongodb+srv://aashwasan445:2FXuldBckjw2mOTn@aashwasan.r9ia2.mongodb.net/?retryWrites=true&w=majority&appName=aashwasan";
 
 const connectDB = async () => {
     try {
