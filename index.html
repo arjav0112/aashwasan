@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cashfree Checkout Integration</title>
+        <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+    </head>
+    <body>
+        <form method="post" action="http://localhost:3000/orders">
+            <div class="row">
+                <p>Click below to open the checkout page in current tab</p>
+                <button id="renderBtn">Pay Now</button>
+            </div>
+        </form>
+        <script>
+            const cashfree = Cashfree({
+                mode: "production",
+            });
+            document.getElementById("renderBtn").addEventListener("click", () => {
+                let checkoutOptions = {
+                    paymentSessionId: "session_a1VXIPJo8kh7IBigVXX8LgTMupQW_cu25FS8KwLwQLOmiHqbBxq5UhEilrhbDSKKHA6UAuOj9506aaHNlFAHEqYrHSEl9AVtYQN9LIIc4vkH",
+                    redirectTarget: "_blank",
+                };
+                cashfree.checkout(checkoutOptions);
+            });
+        </script>
+    </body>
+</html>

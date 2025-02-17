@@ -1,3 +1,4 @@
+const { Cashfree } = require("cashfree-pg"); 
 const express = require('express');
 const mongoose = require('mongoose');
 const admin = require('firebase-admin');
@@ -347,6 +348,58 @@ app.post('/api/register', async (req, res) => {
 //         res.status(500).json({ error: 'Internal server error' });
 //     }
 // });
+
+//payment api
+
+
+// const cashfree = new Cashfree({
+//     mode:"sandbox" //or production
+// });
+
+
+Cashfree.XClientId = 'TEST1048322367f436d20581684f220132238401';
+Cashfree.XClientSecret = 'cfsk_ma_test_14666c0492605737a735ea295bf696df_019ed38c';
+Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
+
+function generateorderid(){
+    const uniqueid = crypto.randomBytes(16).toString("hex");
+
+    const hash = crypto.createHash('sha256');
+    hash.update(uniqueid);
+
+    const orderId = hash.digest('hex');
+
+    return orderId.substr(0,12)
+}
+
+app.get("/orders",async (req,res)=>{
+    
+    let request = {
+      "order_amount": "1",
+      "order_currency": "INR",
+      "order_id": await generateorderid(),
+      "customer_details": {
+        "customer_id": "AJ",
+        "customer_name": "abc",
+        "customer_email": "example@gmail.com",
+        "customer_phone": "9999999999"
+      },
+    }
+  
+    Cashfree.PGCreateOrder("2023-08-01",request).then((response) => {
+      var a = response.data;
+      console.log(a)
+    //   console.log("Current Environment:", Cashfree.XEnvironment);
+
+      res.send(a);
+    })
+      .catch((error) => {
+        // console.log("Current Environment:", Cashfree.XEnvironment);
+        console.error('Error setting up order request:', error.response.data);
+      });
+  
+})
+
 
 // Endpoint to save user data
 app.post('/api/google', async (req, res) => {
