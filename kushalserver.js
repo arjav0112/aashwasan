@@ -21,6 +21,10 @@ const { v4: uuidv4 } = require('uuid'); // To generate unique IDs
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const Groq = require("groq-sdk")
+const cors = require('cors')
+const { google } = require('googleapis')
+const fs = require("fs")
+const path = require("path")
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
@@ -28,6 +32,7 @@ admin.initializeApp({
 });
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -45,6 +50,18 @@ const connectDB = async () => {
 };
 connectDB();
 const oneYearInSeconds = 1000 * 86400;
+
+// app.use((req, res, next) => {
+//     res.setHeader("Content-Security-Policy", "default-src 'self'; img-src 'self' data:;");
+//     next();
+// });
+
+app.use((req, res, next) => {
+    res.setHeader("Content-Security-Policy", "default-src 'self'; img-src 'self' data:;");
+    next();
+});
+
+
 
 //generate agreement
 
@@ -71,7 +88,7 @@ This Escrow Agreement (“Agreement”) is made effective as of [EffectiveDate] 
 
 Client: [ClientName], residing at [ClientAddress] (“Client”)
 Freelancer: [FreelancerName], residing at [FreelancerAddress] (“Freelancer”)
-Escrow Agent: [EscrowAgentName], located at [EscrowAgentAddress] (“Escrow Agent”)
+Aashwasan: [EscrowAgentName], located at [EscrowAgentAddress] 
 
 WHEREAS, the Client and Freelancer entered into a Service Agreement dated [ServiceAgreementDate] whereby the Freelancer shall perform certain services (“Services”) for the Client; and
 
@@ -131,32 +148,32 @@ Date: ___________________         Date: ___________________         Date: ______
 }
 
 app.get('/get_agreement', async (req, res) => {
-    // const agreementDetails = {
-    //     effectiveDate: "2023-10-01",
-    //     serviceAgreementDate: "2023-09-01",
-    //     client: {
-    //         name: "Client Name",
-    //         address: "Client Address"
-    //     },
-    //     freelancer: {
-    //         name: "Freelancer Name",
-    //         address: "Freelancer Address"
-    //     },
-    //     escrowAgent: {
-    //         name: "Agent Name",
-    //         address: "Agent Address"
-    //     },
-    //     depositAmount: 1000,
-    //     currency: "USD",
-    //     reviewPeriod: 14,
-    //     disputeNotificationPeriod: 7,
-    //     mediationPeriod: 30,
-    //     noticePeriod: 15,
-    //     escrowAgentFee: "5%",
-    //     expenseAllocation: "Client",
-    //     jurisdiction: "California",
-    //     arbitrationRules: "AAA Rules"
-    // };
+    const agreementDetails = {
+        effectiveDate: "2023-10-01",
+        serviceAgreementDate: "2023-09-01",
+        client: {
+            name: "Arjav",
+            address: "Sector-3,Delhi"
+        },
+        freelancer: {
+            name: "Sachin Sharma",
+            address: "Sector-24,Mumbai"
+        },
+        escrowAgent: {
+            name: "Aashwasan",
+            address: "Delhi"
+        },
+        depositAmount: 10000,
+        currency: "INR",
+        reviewPeriod: 14,
+        disputeNotificationPeriod: 7,
+        mediationPeriod: 30,
+        noticePeriod: 15,
+        escrowAgentFee: "2%",
+        expenseAllocation: "Client",
+        jurisdiction: "INDIA",
+        arbitrationRules: "AAA Rules"
+    };
 
     // {
     //     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -255,7 +272,7 @@ app.get('/get_agreement', async (req, res) => {
     //       "jurisdiction"
     //     ]
     //   }  
-    const agreementDetails = req.body;
+    // const agreementDetails = req.body;
     try {
         const agreement = await generateAgreement(agreementDetails);
         res.send(agreement);
@@ -322,32 +339,65 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+//drive api
+const CLIENT_ID = '811538287917-9me3ni2t2b8nuk87ab3mjbt88nh4k06u.apps.googleusercontent.com';
+const CLIENT_SECRET = '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';
+const REDIRECT_URL = 'https://developers.google.com/oauthplayground';
 
-// app.get('/api/usernames', async (req, res) => {
-//     try {
-//         // Fetch only usernames from the database
-//         const usernames = await KushalUser.find().select('username').lean();
-//         const usernamesList = usernames.map(user => user.username);
-//         // print("here")
-//         res.status(200).json(usernamesList);
-//     } catch (error) {
-//         console.error('Error fetching usernames:', error);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+const REFRESH_TOKEN = '1//04izepTXW3AUdCgYIARAAGAQSNwF-L9Iro9u-r_NbsOUWBBKeB_1XAsLPAwx7e9oZpRPmhFSzyjDYD4SRIDojwBAbYLNX56DoRik';
 
-// app.get('/api/emails', async (req, res) => {
-//     try {
-//         // Fetch only usernames from the database
-//         const usernames = await KushalUser.find().select('email').lean();
-//         const emailList = usernames.map(user => user.email);
-//         // print("here")
-//         res.status(200).json(emailList);
-//     } catch (error) {
-//         console.error('Error fetching usernames:', error);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+
+const oauth2Client = new google.auth.OAuth2(
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URL,
+)
+
+oauth2Client.setCredentials({refresh_token: REFRESH_TOKEN});
+
+const drive = google.drive({
+    version: 'v3',
+    auth: oauth2Client,
+})
+
+// console.log(filepath);
+
+const uploadflies = async (filepath)=>{
+    try{
+        const response = await drive.files.create({
+            requestBody: {
+                name: 'ABCDEF.pdf',
+                mimeType: 'application/pdf',
+            },
+            media: {
+                mimeType: 'application/pdf',
+                body: fs.createReadStream(filepath)
+            }
+        })
+        
+        // console.log(response.data);
+        return response.data;
+    }catch(err){
+        console.log(err.message)
+    }
+}
+
+
+app.get("/uploadfile",async (req,res)=>{
+    try{
+        const filepath = path.join(__dirname,'graph.pdf')
+        const response = await uploadflies(filepath);
+        if(!response){
+            throw err = "Some error Found";
+        }
+
+        // console.log(response);
+
+        res.send(response);
+    }catch(err){
+        console.log(err)
+    }
+})
 
 //payment api
 
@@ -379,10 +429,10 @@ app.get("/orders",async (req,res)=>{
       "order_currency": "INR",
       "order_id": await generateorderid(),
       "customer_details": {
-        "customer_id": "AJ",
-        "customer_name": "abc",
-        "customer_email": "example@gmail.com",
-        "customer_phone": "9999999999"
+        "customer_id": "SH",
+        "customer_name": "sachin",
+        "customer_email": "arjav@gmail.com",
+        "customer_phone": "9090407368"
       },
     }
   

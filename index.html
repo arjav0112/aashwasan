@@ -9,20 +9,31 @@
     <body>
         <form method="post" action="http://localhost:3000/orders">
             <div class="row">
+                
                 <p>Click below to open the checkout page in current tab</p>
                 <button id="renderBtn">Pay Now</button>
             </div>
         </form>
         <script>
             const cashfree = Cashfree({
-                mode: "production",
+                mode: "sandbox",
             });
-            document.getElementById("renderBtn").addEventListener("click", () => {
-                let checkoutOptions = {
-                    paymentSessionId: "session_a1VXIPJo8kh7IBigVXX8LgTMupQW_cu25FS8KwLwQLOmiHqbBxq5UhEilrhbDSKKHA6UAuOj9506aaHNlFAHEqYrHSEl9AVtYQN9LIIc4vkH",
-                    redirectTarget: "_blank",
-                };
-                cashfree.checkout(checkoutOptions);
+            
+            document.getElementById("renderBtn").addEventListener("click",async () => {
+                try{
+
+                    const response = await fetch('http://localhost:3000/orders');
+                    
+                    const data = await response.json();
+                    console.log(data);
+                    // let checkoutOptions = {
+                    //     paymentSessionId: "",
+                    //     redirectTarget: "_blank",
+                    // };
+                    // cashfree.checkout(checkoutOptions);
+                } catch(err){
+                    console.log(err);
+                }
             });
         </script>
     </body>
